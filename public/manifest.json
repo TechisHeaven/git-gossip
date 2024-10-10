@@ -1,0 +1,16 @@
+{
+  "manifest_version": 2,
+  "name": "Git Gossip",
+  "version": "1.0",
+  "description": "GitHub Gossip: Real-Time Chat and Message Storage for GitHub",
+  "browser_action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "vite.svg"
+    }
+  },
+  "permissions": ["activeTab"],
+  "icons": {
+    "16": "vite.svg"
+  }
+}
