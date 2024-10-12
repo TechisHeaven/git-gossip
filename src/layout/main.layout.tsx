@@ -4,7 +4,7 @@ import { useAuth } from "../provider/userProvider";
 import { MAIN_SERVER_ROUTE } from "../constants";
 
 const Main = () => {
-  const { user } = useAuth();
+  const { user, logoutUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
@@ -12,9 +12,13 @@ const Main = () => {
   }, [user, location]);
 
   const handleLogout = () => {
-    fetch(`${MAIN_SERVER_ROUTE}/auth/logout`, { method: "GET" })
+    fetch(`${MAIN_SERVER_ROUTE}/auth/logout`, {
+      method: "GET",
+      credentials: "include",
+    })
       .then((response) => {
         if (response.ok) {
+          logoutUser();
           navigate("/auth"); // Redirect to the auth page after logout
         } else {
         }

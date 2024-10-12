@@ -6,9 +6,11 @@ import axios from "axios";
 const AuthContext = createContext<{
   user: any | null;
   setUser: (user: any | null) => void;
+  logoutUser: () => void;
 }>({
   user: null,
   setUser: () => {},
+  logoutUser: () => {},
 });
 
 const UserProvider = ({ children }: { children: React.ReactNode }) => {
@@ -47,8 +49,12 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, location, navigate]);
 
+  function logoutUser() {
+    setUser(null);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, logoutUser }}>
       {children}
     </AuthContext.Provider>
   );

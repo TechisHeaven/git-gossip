@@ -47,6 +47,7 @@ router.get("/logout", (req: any, res) => {
     req.logout(function (err: any) {
       // res.redirect("http://localhost:5173/#/profile");
     });
+    res.status(200).json({ message: "Logout User Success!" });
   } catch (error) {
     console.log("Error during logout Main:", error);
     res.status(500).json({ message: "Internal Server Error" });
