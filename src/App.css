@@ -1,5 +1,12 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  width: 400px;
+  min-width: 400px;
+  min-height: 600px;
+}
+
+body {
+  overflow-x: hidden;
+  color: #fff;
+  background-color: #050d21;
 }

@@ -30,6 +30,7 @@ export default function ErrorPage() {
       >
         Home
       </Link>
+      {window.location.href}
     </div>
   );
 }
