@@ -64,6 +64,7 @@ passport.serializeUser(function (userSession: any, done) {
     id: userSession.id,
     displayName: userSession.displayName,
     username: userSession.username,
+    location: userSession.location,
     profileUrl: userSession.profileUrl,
     profileImage: userSession.photos[0].value,
     accessToken: userSession.accessToken,
@@ -101,15 +102,6 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
     }
 
     // If the token is valid, attach the user data to the request object
-    const user = {
-      user: {
-        id: decoded.id,
-        name: decoded.displayName,
-        profileUrl: decoded.profileUrl,
-        profileImage: decoded.profileImage,
-        accessToken: decoded.accessToken,
-      },
-    };
     req.user = decoded as any;
   });
 

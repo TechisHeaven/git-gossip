@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 import dotenv from "dotenv";
 import { ensureAuthenticated } from "../../server";
+import { StringLiteral } from "typescript";
 
 dotenv.config();
 const router = express.Router();
@@ -31,6 +32,8 @@ router.get(
       profileImage: string;
       photos: [{ value: string }];
       accessToken: string;
+      username: string;
+      location: string;
     };
 
     // Generate a token (JWT or any other method you prefer)
@@ -39,6 +42,8 @@ router.get(
         id: user.id,
         displayName: user.displayName,
         profileUrl: user.profileUrl,
+        username: user.username,
+        location: user.location,
         profileImage: user.profileImage || user.photos[0].value,
         accessToken: user.accessToken,
       },
@@ -61,9 +66,10 @@ router.get("/user", ensureAuthenticated, (req: any, res: Response) => {
   const userData = {
     id: req.user.id,
     name: req.user.displayName,
+    username: req.user.username,
+    location: req.user.location,
     profileUrl: req.user.profileUrl,
     profileImage: req.user.profileImage,
-    accessToken: req.user.accessToken,
   };
   res.json(userData);
 });

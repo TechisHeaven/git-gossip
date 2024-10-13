@@ -17,3 +17,14 @@ export async function fetchRepos() {
     console.log(error);
   }
 }
+export async function searchRepos(value: string) {
+  try {
+    const result = await axios.get(
+      `https://api.github.com/search/repositories?q=${value}&order=desc&per_page=5`
+    );
+
+    return result.data.items;
+  } catch (error) {
+    console.log(error);
+  }
+}

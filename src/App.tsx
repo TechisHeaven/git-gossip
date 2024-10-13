@@ -3,17 +3,16 @@ import "./App.css";
 import AppLayout from "./layout/main.layout";
 import Login from "./pages/Login";
 import UserProvider, { useAuth } from "./provider/userProvider";
-import Profile from "./pages/Profile";
 import { Dashboard } from "./pages/dashboard";
+import RepositoriesDashboard from "./pages/RepositoriesDashboard";
 
 function App() {
-  // return <RouterProvider router={router} fallbackElement={<BigSpinner />} />;
   return (
     <UserProvider>
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/:id" element={<RepositoriesDashboard />} />
           <Route path="/auth" element={<AuthRedirect />} />
           <Route path="/*" element={<div>404 page</div>} />
         </Route>
