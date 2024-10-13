@@ -121,7 +121,7 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
     return next();
   }
   // res.redirect(process.env.MAIN_REDIRECT_URL!);
-  res.status(401).json({
+  return res.status(401).json({
     message: "Not Authenticated",
   });
   // res.json("not authenicated");
