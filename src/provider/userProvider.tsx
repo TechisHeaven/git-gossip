@@ -17,14 +17,21 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   useEffect(() => {
-    // Fetch user authentication status from your backend
-    getUser();
+    // Check for token in localStorage
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      // If token exists, get user details
+      getUserFromToken(token);
+    }
   }, []);
 
-  async function getUser() {
+  async function getUserFromToken(token: string) {
     axios
       .get(`${MAIN_SERVER_ROUTE}/auth/user`, {
         withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`, // Send the token in the Authorization header
+        },
       })
       .then(function (response) {
         // handle success
@@ -37,6 +44,9 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
       .catch(function (error) {
         // handle error
         console.log(error);
+        // localStorage.removeItem("authToken");
+        setUser(null);
+        navigate("/auth"); // Redirect to login page
       })
       .finally(function () {
         // always executed
@@ -47,10 +57,13 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     if (!user && location.pathname !== "/auth") {
       navigate("/auth");
     }
-  }, [user, location, navigate]);
+  }, [user, navigate]);
 
   function logoutUser() {
     setUser(null);
+    setUser(null);
+    localStorage.removeItem("authToken"); // Clear the token on logout
+    navigate("/auth");
   }
 
   return (

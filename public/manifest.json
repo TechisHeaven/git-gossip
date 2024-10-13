@@ -10,7 +10,7 @@
       "16": "vite.svg"
     }
   },
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "cookies", "storage", "http://localhost:5000/"],
   "icons": {
     "16": "vite.svg"
   }

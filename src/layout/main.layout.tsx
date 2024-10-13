@@ -2,14 +2,29 @@ import { useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../provider/userProvider";
 import { MAIN_SERVER_ROUTE } from "../constants";
+import { IoChevronBack } from "react-icons/io5";
+import DropDown from "../components/DropDown/DropDown";
 
 const Main = () => {
   const { user, logoutUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   useEffect(() => {
-    if (!user && location.pathname != "/auth") navigate("/auth");
-  }, [user, location]);
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get("token");
+    if (token) {
+      // Save the token to localStorage or handle login
+      localStorage.setItem("authToken", token);
+
+      // Simulate user login using the token (you can replace this with your logic)
+      // loginUser({ token }); // Assuming you set the user state here
+
+      // Remove the token from the URL without reloading the page
+      navigate(location.pathname, { replace: true });
+    }
+
+    // if (location.pathname != "/auth") navigate("/auth");
+  }, [user, location, navigate]);
 
   const handleLogout = () => {
     fetch(`${MAIN_SERVER_ROUTE}/auth/logout`, {
@@ -28,24 +43,39 @@ const Main = () => {
       });
   };
 
+  const userImage = user?.profileImage || "vite.svg";
   return (
     <>
       {user && (
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/profile">Profile</Link>
-          </li>
-          <li>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white hover:bg-red-600 transition-colors font-semibold inline-flex items-center gap-2 border px-4 p-2 rounded-md shadow-sm"
+        <ul className="inline-flex items-center gap-2 px-4 p-2 justify-between w-full">
+          <div className="inline-flex items-center gap-2">
+            <li>
+              <Link to="/" className="p-2 block">
+                <IoChevronBack className="text-lg" />
+              </Link>
+            </li>
+            <h4 className="text-lg font-semibold">Repositories</h4>
+          </div>
+          <div className="profile">
+            <DropDown
+              target={
+                <img
+                  className="w-10 h-10 rounded-full object-center object-cover"
+                  width={40}
+                  height={40}
+                  src={userImage}
+                  alt=""
+                />
+              }
             >
-              Logout
-            </button>
-          </li>
+              <button
+                onClick={handleLogout}
+                className="text-white font-semibold px-4 p-2 w-full"
+              >
+                Logout
+              </button>
+            </DropDown>
+          </div>
         </ul>
       )}
       <Outlet />

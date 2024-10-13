@@ -4,6 +4,7 @@ import AppLayout from "./layout/main.layout";
 import Login from "./pages/Login";
 import UserProvider, { useAuth } from "./provider/userProvider";
 import Profile from "./pages/Profile";
+import { Dashboard } from "./pages/dashboard";
 
 function App() {
   // return <RouterProvider router={router} fallbackElement={<BigSpinner />} />;
@@ -11,7 +12,7 @@ function App() {
     <UserProvider>
       <Routes>
         <Route path="/" element={<AppLayout />}>
-          <Route path="/" element={<div>Dashboard</div>} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/auth" element={<AuthRedirect />} />
           <Route path="/*" element={<div>404 page</div>} />

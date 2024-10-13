@@ -8,18 +8,20 @@ import GitHubStrategy from "passport-github";
 import session from "express-session";
 import * as middlewares from "./middleware";
 import api from "./routes";
+import jwt from "jsonwebtoken";
 
 dotenv.config();
 const app = express();
 
 app.use(morgan("dev"));
 app.use(helmet());
+const allowedOrigins = [
+  "chrome-extension://oplnbcbbpbbnoejiicbpkncgegjncnai", // Allow your extension
+  "http://localhost:5173", // Allow your local development server (if applicable)
+];
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "chrome-extension://oplnbcbbpbbnoejiicbpkncgegjncnai",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
@@ -30,7 +32,13 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET! || "your_secret_key",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
+    proxy: true,
+    cookie: {
+      sameSite: "none",
+      secure: true,
+      maxAge: 3600000,
+    },
   })
 );
 
@@ -44,7 +52,8 @@ passport.use(
     },
     (accessToken, refreshToken, profile, done) => {
       // Handle the user profile here
-      console.log(profile);
+
+      (profile as any).accessToken = accessToken;
       return done(null, profile);
     }
   )
@@ -57,6 +66,7 @@ passport.serializeUser(function (userSession: any, done) {
     username: userSession.username,
     profileUrl: userSession.profileUrl,
     profileImage: userSession.photos[0].value,
+    accessToken: userSession.accessToken,
   };
   done(null, user);
 });
@@ -73,6 +83,40 @@ app.use(passport.session());
 app.use("/api/v1", api);
 
 export function ensureAuthenticated(req: any, res: any, next: () => any) {
+  // Extract the token from the Authorization header
+  const token = req.headers.authorization?.split(" ")[1]; // Assuming 'Bearer TOKEN'
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "No token provided. Unauthorized access." });
+  }
+
+  // Verify the token using your JWT_SECRET
+  jwt.verify(token, process.env.JWT_SECRET!, (err: any, decoded: any) => {
+    if (err) {
+      return res
+        .status(401)
+        .json({ message: "Invalid token. Unauthorized access." });
+    }
+
+    // If the token is valid, attach the user data to the request object
+    const user = {
+      user: {
+        id: decoded.id,
+        name: decoded.displayName,
+        profileUrl: decoded.profileUrl,
+        profileImage: decoded.profileImage,
+        accessToken: decoded.accessToken,
+      },
+    };
+    req.user = decoded as any;
+  });
+
+  if (req.user) {
+    return next();
+  }
+
   if (req.isAuthenticated()) {
     return next();
   }

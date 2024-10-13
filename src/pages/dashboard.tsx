@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom";
+import Repositories from "../components/Repositories/Repositories";
 
 export const Dashboard = () => {
   return (
     <div>
-      Dashboard Page <Link to={`/${window.location.href}`}>GO</Link>
+      <Repositories />
     </div>
   );
 };
