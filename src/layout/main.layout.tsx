@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../provider/userProvider";
 import { MAIN_SERVER_ROUTE } from "../constants";
 import { IoChevronBack } from "react-icons/io5";
@@ -44,15 +44,19 @@ const Main = () => {
   };
 
   const userImage = user?.profileImage || "vite.svg";
+
+  function handleBackButton() {
+    navigate(-1);
+  }
   return (
     <>
       {user && (
         <ul className="inline-flex items-center gap-2 px-4 p-2 justify-between w-full">
           <div className="inline-flex items-center gap-2">
             <li>
-              <Link to="/" className="p-2 block">
+              <button onClick={handleBackButton} className="p-2 block">
                 <IoChevronBack className="text-lg" />
-              </Link>
+              </button>
             </li>
             <h4 className="text-lg font-semibold">Repositories</h4>
           </div>

@@ -15,6 +15,7 @@ export async function fetchRepos() {
     return result.data;
   } catch (error) {
     console.log(error);
+    return error;
   }
 }
 export async function searchRepos(value: string) {
@@ -26,5 +27,52 @@ export async function searchRepos(value: string) {
     return result.data.items;
   } catch (error) {
     console.log(error);
+    return error;
+  }
+}
+
+export async function getRepoById(id: number | string) {
+  try {
+    const result = await axios.get(`https://api.github.com/repositories/${id}`);
+    return result.data;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
+
+export async function getRepoContentDataByPath(
+  path: number | string,
+  url: string
+) {
+  const mockRepoContents: {
+    [key: string]: { name: string; path: string; type: string; sha: string }[];
+  } = {
+    "": [
+      { name: "Folder1", path: "Folder1", type: "dir", sha: "1" },
+      { name: "Folder2", path: "Folder2", type: "dir", sha: "2" },
+      { name: "File1.txt", path: "File1.txt", type: "file", sha: "3" },
+    ],
+    Folder1: [
+      { name: "Subfolder1", path: "Folder1/Subfolder1", type: "dir", sha: "4" },
+      { name: "File2.txt", path: "Folder1/File2.txt", type: "file", sha: "5" },
+    ],
+    Folder2: [
+      { name: "File3.txt", path: "Folder2/File3.txt", type: "file", sha: "6" },
+    ],
+  };
+
+  try {
+    console.log(url);
+    // const result = await axios.get(
+    //   `https://api.github.com/repos/TechisHeaven/git-gossip/contents/${path}`
+    // );
+    // return result.data;
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Ensure the path is a valid key in mockRepoContents
+    return mockRepoContents[path];
+  } catch (e) {
+    console.log(e);
   }
 }

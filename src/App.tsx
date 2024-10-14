@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<AppLayout />}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/:id" element={<RepositoriesDashboard />} />
+          <Route path="/:id/*" element={<RepositoriesDashboard />} />
           <Route path="/auth" element={<AuthRedirect />} />
           <Route path="/*" element={<div>404 page</div>} />
         </Route>
