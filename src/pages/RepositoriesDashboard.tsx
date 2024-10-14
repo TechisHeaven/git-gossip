@@ -7,7 +7,10 @@ import FileExplorer from "../components/FileExplorer/FileExplorer";
 import Breadcrumb from "../components/BreadCrumb/BreadCrumb";
 import CodeViewer from "../components/Code/CodeViewer";
 import toast from "react-hot-toast";
-import { ERROR_MESSAGE_GITHUB_API_LIMIT } from "../constants";
+import {
+  ERROR_MESSAGE_GITHUB_API_LIMIT,
+  ERROR_MESSAGE_NOT_FOUND,
+} from "../constants";
 
 const RepositoriesDashboard = () => {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +30,12 @@ const RepositoriesDashboard = () => {
         if (error.status === 403) {
           toast.error(ERROR_MESSAGE_GITHUB_API_LIMIT);
           navigate("/");
+          return;
+        }
+        if (error.status === 404) {
+          toast.error(ERROR_MESSAGE_NOT_FOUND);
+          navigate("/");
+          return;
         }
       });
   }, [id]);

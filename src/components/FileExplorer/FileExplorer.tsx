@@ -7,6 +7,8 @@ import {
   fetchFileContentByUrl,
   getRepoContentDataByPath,
 } from "../../services/repositories/service.repositories";
+import { ERROR_MESSAGE_FILE_NOT_FOUND } from "../../constants";
+import toast from "react-hot-toast";
 
 const FileExplorer = ({
   url,
@@ -29,9 +31,13 @@ const FileExplorer = ({
     try {
       const data = await getRepoContentDataByPath(fetchPath, url);
       return data; // Return fetched data
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
       setLoading(false);
+      if (error.status === 404) {
+        toast.error(ERROR_MESSAGE_FILE_NOT_FOUND);
+        navigate(`/${id}`);
+        return;
+      }
       return [];
     } finally {
       setLoading(false);

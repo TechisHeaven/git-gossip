@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MAIN_SERVER_ROUTE } from "../constants";
 import axios from "axios";
+import { getCurrentUserToken } from "../utils/storage/token.utils";
 
 const AuthContext = createContext<{
   user: any | null;
@@ -54,7 +55,8 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   useEffect(() => {
-    if (!user && location.pathname !== "/auth") {
+    const authToken = getCurrentUserToken();
+    if (!authToken && !user && location.pathname !== "/auth") {
       navigate("/auth");
     }
   }, [user, navigate]);

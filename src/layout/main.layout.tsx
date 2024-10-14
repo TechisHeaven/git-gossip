@@ -13,16 +13,10 @@ const Main = () => {
     const urlParams = new URLSearchParams(location.search);
     const token = urlParams.get("token");
     if (token) {
-      // Save the token to localStorage or handle login
       localStorage.setItem("authToken", token);
 
-      // Simulate user login using the token (you can replace this with your logic)
-      // loginUser({ token }); // Assuming you set the user state here
-
-      // Remove the token from the URL without reloading the page
       navigate(location.pathname, { replace: true });
     }
-
     // if (location.pathname != "/auth") navigate("/auth");
   }, [user, location, navigate]);
 
@@ -48,17 +42,28 @@ const Main = () => {
   function handleBackButton() {
     navigate(-1);
   }
+
+  function getHeadingPathname() {
+    const pathname = location.pathname;
+    if (pathname.startsWith("/chat")) return "Chat";
+    if (pathname === "/") return "Repositories";
+    return "Git Gossips";
+  }
+  const heading = getHeadingPathname();
   return (
     <>
       {user && (
         <ul className="inline-flex items-center gap-2 px-4 p-2 justify-between w-full">
           <div className="inline-flex items-center gap-2">
-            <li>
-              <button onClick={handleBackButton} className="p-2 block">
-                <IoChevronBack className="text-lg" />
-              </button>
-            </li>
-            <h4 className="text-lg font-semibold">Repositories</h4>
+            {location.pathname !== "/" && (
+              <li>
+                <button onClick={handleBackButton} className="p-2 block">
+                  <IoChevronBack className="text-lg" />
+                </button>
+              </li>
+            )}
+
+            <h4 className="text-lg font-semibold">{heading}</h4>
           </div>
           <div className="profile">
             <DropDown
