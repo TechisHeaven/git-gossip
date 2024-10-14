@@ -2,7 +2,11 @@ import { RepositoryType } from "../../types/repositories.type";
 
 const OwnerProfile = ({ owner }: { owner: RepositoryType["owner"] }) => {
   return (
-    <div className="inline-flex items-center gap-2 p-4">
+    <a
+      href={owner?.html_url}
+      target="__blank"
+      className="inline-flex items-center gap-2 p-4"
+    >
       <img
         src={owner?.avatar_url}
         width={20}
@@ -11,7 +15,7 @@ const OwnerProfile = ({ owner }: { owner: RepositoryType["owner"] }) => {
         alt="Repo-owner-image"
       />
       <h6 className="text-sm font-semibold">{owner?.login}</h6>
-    </div>
+    </a>
   );
 };
 

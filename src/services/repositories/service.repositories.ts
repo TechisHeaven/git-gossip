@@ -15,7 +15,7 @@ export async function fetchRepos() {
     return result.data;
   } catch (error) {
     console.log(error);
-    return error;
+    throw error;
   }
 }
 export async function searchRepos(value: string) {
@@ -27,7 +27,7 @@ export async function searchRepos(value: string) {
     return result.data.items;
   } catch (error) {
     console.log(error);
-    return error;
+    throw error;
   }
 }
 
@@ -36,8 +36,8 @@ export async function getRepoById(id: number | string) {
     const result = await axios.get(`https://api.github.com/repositories/${id}`);
     return result.data;
   } catch (error) {
-    console.log(error);
-    return error;
+    console.log("Service Error: ", error);
+    throw error;
   }
 }
 
@@ -64,15 +64,26 @@ export async function getRepoContentDataByPath(
 
   try {
     console.log(url);
-    // const result = await axios.get(
-    //   `https://api.github.com/repos/TechisHeaven/git-gossip/contents/${path}`
-    // );
-    // return result.data;
+    const result = await axios.get(
+      `https://api.github.com/repos/TechisHeaven/git-gossip/contents/${path}`
+    );
+    return result.data;
 
     await new Promise((resolve) => setTimeout(resolve, 500));
     // Ensure the path is a valid key in mockRepoContents
     return mockRepoContents[path];
   } catch (e) {
     console.log(e);
+    throw e;
+  }
+}
+
+export async function fetchFileContentByUrl(url: string) {
+  try {
+    const result = await axios.get(url);
+    return result.data.content;
+  } catch (error) {
+    console.log(error);
+    throw error;
   }
 }

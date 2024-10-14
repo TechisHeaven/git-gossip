@@ -6,7 +6,11 @@
 }
 
 body {
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   color: #fff;
   background-color: #050d21;
+}
+
+.go2072408551 {
+  text-align: center;
 }
