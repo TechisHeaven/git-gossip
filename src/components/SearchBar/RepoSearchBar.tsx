@@ -4,6 +4,7 @@ import { searchRepos } from "../../services/repositories/service.repositories";
 import useDebounce from "../../utils/useDebounce";
 import { BiSearch } from "react-icons/bi";
 import Loader from "../Loader/Loader";
+import { Link } from "react-router-dom";
 
 const RepoSearchBar = () => {
   const [searchValue, setSearchValue] = useState("");
@@ -67,7 +68,10 @@ const RepoSearchBar = () => {
             {searchState.loading && <Loader size="sm" color="black" />}
             {searchReposItems.map((repo) => {
               return (
-                <li className="py-1 inline-flex gap-2 items-center">
+                <Link
+                  to={`/${repo.id}`}
+                  className="py-1 inline-flex gap-2 items-center"
+                >
                   <img
                     src={repo?.owner.avatar_url}
                     className="w-5 h-5 rounded-full shadow-md border"
@@ -79,7 +83,7 @@ const RepoSearchBar = () => {
                     <h6 className="text-sm font-semibold">{repo.name}</h6>
                     <p className="text-gray-400">{repo.full_name}</p>
                   </div>
-                </li>
+                </Link>
               );
             })}
             {searchState.error.length > 0 && (

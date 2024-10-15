@@ -9,6 +9,7 @@ import {
 } from "../../services/repositories/service.repositories";
 import { ERROR_MESSAGE_FILE_NOT_FOUND } from "../../constants";
 import toast from "react-hot-toast";
+import { fileDataType } from "../../pages/RepositoriesDashboard";
 
 const FileExplorer = ({
   url,
@@ -16,7 +17,7 @@ const FileExplorer = ({
   setCurrentPath,
 }: {
   url: string;
-  setFileData: Dispatch<SetStateAction<string>>;
+  setFileData: Dispatch<SetStateAction<fileDataType>>;
   setCurrentPath: Dispatch<SetStateAction<string[]>>;
 }) => {
   const [contents, setContents] = useState<any[]>([]);
@@ -30,7 +31,14 @@ const FileExplorer = ({
     setLoading(true);
     try {
       const data = await getRepoContentDataByPath(fetchPath, url);
-      return data; // Return fetched data
+      const sortedData = data.sort(
+        (a: { type: string }, b: { type: string }) => {
+          if (a.type === "dir" && b.type === "file") return -1;
+          if (a.type === "file" && b.type === "dir") return 1;
+          return 0;
+        }
+      );
+      return sortedData; // Return fetched data
     } catch (error: any) {
       setLoading(false);
       if (error.status === 404) {
@@ -50,11 +58,11 @@ const FileExplorer = ({
       setCache((prevCache) => ({ ...prevCache, [path!]: data }));
       setContents(data);
       setCurrentPath(path!.split("/"));
-      console.log(path!.split("/"));
-      const autoSelectFile = data.find(
-        (item: { name: string }) =>
-          item.name === "README.md" || item.name === ".gitignore"
-      );
+
+      const autoSelectFile =
+        data.find((item: { name: string }) => item.name === "README.md") ||
+        data.find((item: { name: string }) => item.name === ".gitignore");
+
       if (autoSelectFile) {
         handleFileClick(autoSelectFile);
       }
@@ -69,8 +77,8 @@ const FileExplorer = ({
   const handleFileClick = async (file: any) => {
     try {
       const fileContent = await fetchFileContentByUrl(file.url);
-      const readableData = atob(fileContent);
-      setFileData(readableData);
+      const readableData = atob(fileContent.content);
+      setFileData({ content: readableData, name: fileContent.name });
     } catch (error) {
       console.log("Error fetching file content:", error);
     }

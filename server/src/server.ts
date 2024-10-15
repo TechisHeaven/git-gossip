@@ -69,6 +69,7 @@ passport.serializeUser(function (userSession: any, done) {
     profileImage: userSession.photos[0].value,
     accessToken: userSession.accessToken,
   };
+  console.log(user);
   done(null, user);
 });
 
@@ -104,7 +105,7 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
     // If the token is valid, attach the user data to the request object
     req.user = decoded as any;
   });
-
+  console.log(req.user);
   if (req.user) {
     return next();
   }

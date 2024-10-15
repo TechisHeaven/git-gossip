@@ -12,10 +12,17 @@ import {
   ERROR_MESSAGE_NOT_FOUND,
 } from "../constants";
 
+export type fileDataType = {
+  content: string;
+  name: string;
+};
 const RepositoriesDashboard = () => {
   const { id } = useParams<{ id: string }>();
   const [repo, setRepo] = useState<MainRepositoryType>();
-  const [fileData, setFileData] = useState<string>("");
+  const [fileData, setFileData] = useState<fileDataType>({
+    content: "",
+    name: "",
+  });
   const [currentPath, setCurrentPath] = useState<string[]>([]);
   const navigate = useNavigate();
   useEffect(() => {
@@ -41,20 +48,22 @@ const RepositoriesDashboard = () => {
   }, [id]);
 
   return (
-    <div className="flex flex-col md:flex-row gap-2">
-      <div>
-        <OwnerProfile owner={repo?.owner!} />
-        <FileExplorer
-          setCurrentPath={setCurrentPath}
-          setFileData={setFileData}
-          url={repo?.url!}
-        />
+    repo && (
+      <div className="flex flex-col md:flex-row gap-2">
+        <div>
+          <OwnerProfile owner={repo?.owner!} />
+          <FileExplorer
+            setCurrentPath={setCurrentPath}
+            setFileData={setFileData}
+            url={repo?.url!}
+          />
+        </div>
+        <div className="w-full">
+          <Breadcrumb currentPath={currentPath} />
+          <CodeViewer content={fileData.content} name={fileData.name} />
+        </div>
       </div>
-      <div className="w-full">
-        <Breadcrumb currentPath={currentPath} />
-        <CodeViewer rawData={fileData} />
-      </div>
-    </div>
+    )
   );
 };
 

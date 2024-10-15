@@ -6,6 +6,7 @@ import UserProvider, { useAuth } from "./provider/userProvider";
 import { Dashboard } from "./pages/dashboard";
 import RepositoriesDashboard from "./pages/RepositoriesDashboard";
 import Chat from "./pages/Chat";
+import ChatGetstarted from "./pages/ChatGetstarted";
 
 function App() {
   return (
@@ -14,7 +15,8 @@ function App() {
         <Route path="/" element={<AppLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/:id/*" element={<RepositoriesDashboard />} />
-          <Route path="/chat*" element={<Chat />} />
+          <Route path="/chat/get-started" element={<ChatGetstarted />} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="/auth" element={<AuthRedirect />} />
           <Route path="/*" element={<div>404 page</div>} />
         </Route>

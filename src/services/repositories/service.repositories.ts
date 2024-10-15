@@ -1,5 +1,8 @@
 import axios from "axios";
-import { getCurrentUserToken } from "../../utils/storage/token.utils";
+import {
+  getCurrentUserToken,
+  getGithubUserToken,
+} from "../../utils/storage/token.utils";
 import { MAIN_SERVER_ROUTE } from "../../constants";
 
 export async function fetchRepos() {
@@ -20,8 +23,14 @@ export async function fetchRepos() {
 }
 export async function searchRepos(value: string) {
   try {
+    const token = getGithubUserToken();
     const result = await axios.get(
-      `https://api.github.com/search/repositories?q=${value}&order=desc&per_page=5`
+      `https://api.github.com/search/repositories?q=${value}&order=desc&per_page=5`,
+      {
+        headers: {
+          Authorization: `token ${token}`,
+        },
+      }
     );
 
     return result.data.items;
@@ -33,7 +42,15 @@ export async function searchRepos(value: string) {
 
 export async function getRepoById(id: number | string) {
   try {
-    const result = await axios.get(`https://api.github.com/repositories/${id}`);
+    const token = getGithubUserToken();
+    const result = await axios.get(
+      `https://api.github.com/repositories/${id}`,
+      {
+        headers: {
+          Authorization: `token ${token}`,
+        },
+      }
+    );
     return result.data;
   } catch (error) {
     console.log("Service Error: ", error);
@@ -63,10 +80,12 @@ export async function getRepoContentDataByPath(
   };
 
   try {
-    console.log(url);
-    const result = await axios.get(
-      `https://api.github.com/repos/TechisHeaven/git-gossip/contents/${path}`
-    );
+    const token = getGithubUserToken();
+    const result = await axios.get(`${url}/contents/${path}`, {
+      headers: {
+        Authorization: `token ${token}`,
+      },
+    });
     return result.data;
 
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -80,8 +99,13 @@ export async function getRepoContentDataByPath(
 
 export async function fetchFileContentByUrl(url: string) {
   try {
-    const result = await axios.get(url);
-    return result.data.content;
+    const token = getGithubUserToken();
+    const result = await axios.get(url, {
+      headers: {
+        Authorization: `token ${token}`,
+      },
+    });
+    return { content: result.data.content, name: result.data.name };
   } catch (error) {
     console.log(error);
     throw error;

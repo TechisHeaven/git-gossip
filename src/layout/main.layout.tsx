@@ -14,7 +14,6 @@ const Main = () => {
     const token = urlParams.get("token");
     if (token) {
       localStorage.setItem("authToken", token);
-
       navigate(location.pathname, { replace: true });
     }
     // if (location.pathname != "/auth") navigate("/auth");
@@ -87,7 +86,9 @@ const Main = () => {
           </div>
         </ul>
       )}
-      <Outlet />
+      <div className="p-4">
+        <Outlet />
+      </div>
     </>
   );
 };
