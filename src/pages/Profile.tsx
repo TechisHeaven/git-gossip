@@ -24,7 +24,7 @@ const Profile = () => {
           Github
         </a>
         <Link
-          to="/chat/get-started"
+          to="/gossip/get-started"
           className="px-4 p-2 border font-semibold bg-white hover:bg-gray-100 transition-colors text-black rounded-lg shadow-md"
         >
           Chat Now

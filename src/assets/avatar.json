@@ -1,0 +1,49 @@
+{
+  "avatars": [
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Aidan"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Jameson"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Oliver"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Brian"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Liliana"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Valentina"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Christopher"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Emery"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Destiny"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Maria"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Amaya"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Ryan"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Vivian"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Andrea"
+    },
+    {
+      "url": "https://api.dicebear.com/9.x/big-smile/svg?seed=Adrian"
+    }
+  ]
+}

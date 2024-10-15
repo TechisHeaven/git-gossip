@@ -15,8 +15,8 @@ function App() {
         <Route path="/" element={<AppLayout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/:id/*" element={<RepositoriesDashboard />} />
-          <Route path="/chat/get-started" element={<ChatGetstarted />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/gossip/get-started" element={<ChatGetstarted />} />
+          <Route path="/gossip" element={<Chat />} />
           <Route path="/auth" element={<AuthRedirect />} />
           <Route path="/*" element={<div>404 page</div>} />
         </Route>
