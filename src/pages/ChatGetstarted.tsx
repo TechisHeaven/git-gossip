@@ -7,8 +7,12 @@ import { MainRepositoryType } from "../types/repositories.type";
 import RepoSearchedItem from "../components/SearchBar/RepoSearchedItem";
 import { LuHome } from "react-icons/lu";
 import { MdOutlineHomeWork } from "react-icons/md";
-import { IoChevronBack } from "react-icons/io5";
+// import { IoChevronBack } from "react-icons/io5";
 import { avatars } from "../assets/avatar.json";
+import { Radio, RadioGroup } from "@headlessui/react";
+import { BiCheckCircle } from "react-icons/bi";
+import { IoChevronBack } from "react-icons/io5";
+import { MAX_REPO_ROOM_SELECT_LIMIT, MIN_ROOM_NAME_LENGHT } from "../constants";
 
 const ChatGetstarted = () => {
   const { user } = useAuth();
@@ -151,69 +155,76 @@ const CreateRoomSteps = () => {
     roomName: string;
     roomType: RoomType;
     roomAvatar: string;
-    repo: string;
+    repos: MainRepositoryType[];
   };
   const [room, setRoom] = useState<CreateRoomType>({
     roomName: "",
     roomType: "public",
     roomAvatar: avatars[0].url,
-    repo: "",
+    repos: [],
   });
 
   const nextStep = () => {
-    if (step >= 3) return;
+    if (step >= 2) return;
     setStep((prev) => prev + 1);
   };
   const prevStep = () => setStep((prev) => prev - 1);
 
-  function handleCreateRoom() {}
+  console.log(nextStep, prevStep);
+  // function handleCreateRoom() {}
+  const isButtonDisabled =
+    room.roomName.length < MIN_ROOM_NAME_LENGHT ||
+    room.repos.length > MAX_REPO_ROOM_SELECT_LIMIT;
   return (
     <div>
       {step === 1 && (
-        <SelectRoomType
-          nextStep={nextStep}
-          setRoomType={(type: RoomType) =>
-            setRoom((prev) => ({ ...prev, roomType: type }))
-          }
-          roomType={room.roomType}
-          key={"room-type"}
-        />
+        <>
+          <SelectRoomAvatar
+            roomAvatar={room.roomAvatar}
+            setRoomAvatar={(avatar: string) =>
+              setRoom((prev) => ({ ...prev, roomAvatar: avatar }))
+            }
+            key={"room-avatar"}
+          />
+          <SelectRoomName
+            setRoomName={(name: string) =>
+              setRoom((prev) => ({ ...prev, roomName: name }))
+            }
+            roomName={room.roomName}
+            key={"room-name"}
+          />
+          <SelectRoomType
+            setRoomType={(type: RoomType) =>
+              setRoom((prev) => ({ ...prev, roomType: type }))
+            }
+            roomType={room.roomType}
+            key={"room-type"}
+          />
+          <p className="text-gray-400 text-xs py-2">
+            Create a room to share code and jokes! Fill in the details below to
+            start the fun.
+          </p>
+        </>
       )}
 
       {step === 2 && (
-        <SelectRoomName
-          nextStep={nextStep}
-          prevStep={prevStep}
-          setRoomName={(name: string) =>
-            setRoom((prev) => ({ ...prev, roomName: name }))
+        <SelectRepo
+          setRepos={(repos: MainRepositoryType[]) =>
+            setRoom((prev) => ({ ...prev, repos: repos }))
           }
-          roomName={room.roomName}
-          key={"room-name"}
+          repos={room.repos}
+          key={"room-avatar"}
         />
       )}
 
-      {step === 3 && (
-        <SelectRoomAvatar
-          roomName={room.roomName}
-          handleCreateRoom={handleCreateRoom}
-          prevStep={prevStep}
-          roomAvatar={room.roomAvatar}
-          setRoomAvatar={(avatar: string) =>
-            setRoom((prev) => ({ ...prev, roomAvatar: avatar }))
-          }
-          key={"room-avatar"}
+      <div className="py-2 inline-flex items-center gap-2 w-full">
+        {step === 2 && <BackStepButton prevStep={prevStep} />}
+        <NextStepButton
+          nextStep={nextStep}
+          isDisabled={isButtonDisabled}
+          title={step === 2 ? "Create Room" : "Continue"}
         />
-      )}
-      {/* {step === 4 && (
-        <SelectRepo
-          roomName={roomName}
-          handleCreateRoom={handleCreateRoom}
-          prevStep={prevStep}
-          roomAvatar={roomAvatar}
-          setRoomAvatar={setRoomAvatar}
-          key={"room-avatar"}
-        />
-      )} */}
+      </div>
     </div>
   );
 };
@@ -221,69 +232,56 @@ const CreateRoomSteps = () => {
 const SelectRoomType = ({
   roomType,
   setRoomType,
-  nextStep,
 }: {
   roomType: RoomType;
   setRoomType: (type: RoomType) => void;
-  nextStep: () => void;
 }) => {
+  const types = [
+    {
+      title: "public",
+      description: "Where everyone can see your code and your bad jokes!",
+      icon: <LuHome />,
+    },
+    {
+      title: "private",
+      description:
+        "Gossip freely, but remember: what happens here, stays here (unlesssomeone screenshots it)!",
+      icon: <MdOutlineHomeWork />,
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-2">
       <h2 className="text-gray-400 text-xs">Select Room Type</h2>
       <div className="tabs flex flex-col gap-2">
-        <RoomTypeItemTab
-          roomType={roomType}
-          setRoomType={setRoomType}
-          type="public"
-          title="Public Room"
-          description="Where everyone can see your code and your bad jokes!"
-          icon={<LuHome />}
-        />
-        <RoomTypeItemTab
-          roomType={roomType}
-          setRoomType={setRoomType}
-          type="private"
-          title="Private"
-          description=" Gossip freely, but remember: what happens here, stays here (unless
-            someone screenshots it)!"
-          icon={<MdOutlineHomeWork />}
-        />
+        <RadioGroup
+          by={(a: RoomType, b: RoomType) => a === b}
+          value={roomType}
+          onChange={setRoomType}
+          className="space-y-2"
+        >
+          {types.map((type) => (
+            <Radio
+              key={type.title}
+              value={type.title}
+              className="group relative flex cursor-pointer rounded-lg bg-white/5 p-2 px-4 text-white shadow-md transition focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-white/10"
+            >
+              <div className="flex w-full items-center justify-between">
+                <div className="text-sm/6">
+                  <p className="font-semibold capitalize text-white inline-flex items-center gap-2">
+                    {type.icon}
+                    {type.title}
+                  </p>
+                  <div className="flex gap-2 text-white/50 text-xs">
+                    <div>{type.description}</div>
+                  </div>
+                </div>
+                <BiCheckCircle className="text-lg fill-white opacity-0 transition group-data-[checked]:opacity-100" />
+              </div>
+            </Radio>
+          ))}
+        </RadioGroup>
       </div>
-      <NextStepButton key={"next-step-button-type"} nextStep={nextStep} />
-    </div>
-  );
-};
-
-const RoomTypeItemTab = ({
-  title,
-  description,
-  icon,
-  type,
-  roomType,
-  setRoomType,
-}: {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  type: RoomType;
-  roomType: RoomType;
-  setRoomType: (type: RoomType) => void;
-}) => {
-  function handleSelect() {
-    setRoomType(type);
-  }
-  return (
-    <div
-      onClick={handleSelect}
-      className={`tab flex flex-col gap-2 border  transition-colors cursor-pointer p-2 rounded-md ${
-        roomType === type ? "bg-black border-gray-400" : "border-gray-600"
-      }`}
-    >
-      <h4 className="text-sm font-semibold inline-flex gap-2 items-center">
-        {icon}
-        {title}
-      </h4>
-      <p className="text-xs text-gray-400">{description}</p>
     </div>
   );
 };
@@ -291,13 +289,9 @@ const RoomTypeItemTab = ({
 const SelectRoomName = ({
   roomName,
   setRoomName,
-  nextStep,
-  prevStep,
 }: {
   roomName: string;
   setRoomName: (name: string) => void;
-  nextStep: () => void;
-  prevStep: () => void;
 }) => {
   // Handle Room name Change
   function handleRoomNameChange(
@@ -305,9 +299,8 @@ const SelectRoomName = ({
   ): void {
     setRoomName(event.target.value as RoomType);
   }
-  const isButtonDisabled = roomName.length < 3;
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 py-2">
       <h2 className="text-gray-400 text-xs">Enter Room Name</h2>
       <div className="tabs flex flex-col gap-2">
         <input
@@ -318,30 +311,16 @@ const SelectRoomName = ({
           className="px-4 p-2 outline-none rounded-md shadow-md text-white bg-transparent border-gray-600 border "
         />
       </div>
-      <div className="inline-flex items-center w-full gap-2">
-        <BackStepButton key={"prev-step-button"} prevStep={prevStep} />
-        <NextStepButton
-          isDisabled={isButtonDisabled}
-          key={"next-step-button-name"}
-          nextStep={nextStep}
-        />
-      </div>
     </div>
   );
 };
 
 const SelectRoomAvatar = ({
-  roomName,
   roomAvatar,
   setRoomAvatar,
-  handleCreateRoom,
-  prevStep,
 }: {
-  roomName: string;
   roomAvatar: string;
   setRoomAvatar: (avatar: string) => void;
-  handleCreateRoom: () => void;
-  prevStep: () => void;
 }) => {
   const [avatarColor, setAvatarColor] = useState<string>("#bf6f91");
 
@@ -359,31 +338,8 @@ const SelectRoomAvatar = ({
     setAvatarColor(randomBackgroundColor);
   };
 
-  // Array of funny quotes based on room name length
-  const funnyQuotes = [
-    "Wohoooooo! A name only a developer could love: ",
-    "404 Name Not Found (but we still believe in you): ",
-    "Code it like you mean it (or just copy-paste): ",
-    "This name is a semicolon away from greatness (or failure): ",
-    "Debugging this name? Good luck with that! ",
-    "Syntax error? Nah, just a developer's touch: ",
-    "This name is a real catch (like a bug in production): ",
-    "Name that makes you go 'Wow!' (or 'What were you thinking?'): ",
-    "This name is a real gem (just like your last commit message): ",
-    "A name that stands out (like your last pull request): ",
-  ];
-
-  // Select a quote based on the length of the room name
-  const getQuote = (name: string) => {
-    const index = Math.floor(
-      Math.random() * Math.min(name.length, funnyQuotes.length)
-    );
-    return funnyQuotes[index];
-  };
-
   return (
     <div className="flex flex-col gap-2">
-      <h2 className="text-gray-400 text-xs">Select Room Avatar</h2>
       <div className="tabs flex flex-col gap-2 items-center py-2">
         <img
           style={{ backgroundColor: avatarColor }}
@@ -394,19 +350,6 @@ const SelectRoomAvatar = ({
           onClick={randomizeAvatar}
         />
         <h6 className="text-xs text-gray-400">Click avatar to change</h6>
-        <h4 className=" text-sm text-center">
-          {getQuote(roomName)} <span className="font-semibold">{roomName}</span>
-        </h4>
-      </div>
-
-      <div className="inline-flex items-center w-full gap-2">
-        <BackStepButton prevStep={prevStep} key={"prev-step-button"} />
-        <NextStepButton
-          isDisabled={false}
-          title={"Create Room"}
-          key={"next-step-button-name"}
-          nextStep={handleCreateRoom}
-        />
       </div>
     </div>
   );
@@ -439,5 +382,38 @@ const BackStepButton = ({ prevStep }: { prevStep: () => void }) => {
     >
       <IoChevronBack className="text-lg" />
     </button>
+  );
+};
+
+const SelectRepo = ({
+  setRepos,
+  repos,
+}: {
+  setRepos: (repos: MainRepositoryType[]) => void;
+  repos: MainRepositoryType[];
+}) => {
+  // function handleRemoveSelectedItem(repo: MainRepositoryType) {
+  //   console.log(repo);
+  // }
+  // const isSelected = Boolean(repos);
+
+  return (
+    <div>
+      <RepoSearchBar
+        setRepos={(repos: MainRepositoryType[]) => setRepos(repos)}
+      />
+      <div className="w-full flex flex-col gap-2 max-h-72 h-full min-h-32 overflow-y-auto">
+        {repos.length > 0 &&
+          repos.map((repo) => (
+            <RepoSearchedItem
+              key={repo.id}
+              repo={repo}
+              callback={() => setRepos(repos.filter((r) => r.id !== repo.id))}
+              isSelected={true}
+              isBackgroundBlack={true}
+            />
+          ))}
+      </div>
+    </div>
   );
 };

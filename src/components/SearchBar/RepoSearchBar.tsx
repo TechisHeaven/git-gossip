@@ -10,10 +10,12 @@ import RepoSearchedItem from "./RepoSearchedItem";
 interface RepoSearchBarInterface {
   isJoinRoomPage?: boolean;
   setRoom?: React.Dispatch<SetStateAction<MainRepositoryType | null>>;
+  setRepos?: (repos: MainRepositoryType[]) => void;
 }
 const RepoSearchBar = ({
   isJoinRoomPage = false,
   setRoom,
+  setRepos,
 }: RepoSearchBarInterface) => {
   const [searchValue, setSearchValue] = useState<string | null>("");
   const debouncedSearchValue = useDebounce(searchValue ? searchValue : "", 300);
@@ -24,6 +26,8 @@ const RepoSearchBar = ({
   const [searchReposItems, setSearchReposItems] = useState<
     MainRepositoryType[] | []
   >([]);
+  const [selectedRepos, setSelectedRepos] = useState<MainRepositoryType[]>([]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,24 +61,28 @@ const RepoSearchBar = ({
     setSearchValue(event.target.value);
   }
 
-  const handleRepoClick = async (repo: MainRepositoryType) => {
-    if (isJoinRoomPage) {
-      // Logic for join room page
-      // const roomExists = await checkRoomExists(repo.id); // Implement this function
-      const roomExists = true;
-      if (roomExists && setRoom) {
-        // Logic to handle joining the room
-        // e.g., setRoomId(roomExists.id);
-        setRoom(repo);
-        setSearchValue(null);
-        setSearchReposItems([]);
+  const handleRepoClick = (repo: MainRepositoryType) => {
+    if (isJoinRoomPage && setRoom) {
+      // For room selection (single repository)
+      setRoom(repo);
+    } else if (setRepos) {
+      // For multiple repository selection
+      if (selectedRepos.some((r) => r.id === repo.id)) {
+        // If repo is already selected, deselect it
+        const updatedRepos = selectedRepos.filter((r) => r.id !== repo.id);
+        setSelectedRepos(updatedRepos);
+        setRepos(updatedRepos); // Pass updated list to setRepos
       } else {
-        alert("Room does not exist.");
+        // If repo is not selected, add it to selected list
+        const updatedRepos = [...selectedRepos, repo];
+        setSelectedRepos(updatedRepos);
+        setRepos(updatedRepos); // Pass updated list to setRepos
       }
     } else {
-      // Logic for repo page
+      // For navigating to a repository's page
       navigate(`/${repo.id}`);
     }
+    setSearchValue(null); // Clear the search bar after selection
   };
 
   return (
@@ -86,7 +94,7 @@ const RepoSearchBar = ({
           placeholder="Search Git Gossips..."
           onChange={handleSearchValueChange}
           autoComplete="off"
-          className=" p-2 outline-none rounded-full w-full"
+          className="p-2 outline-none rounded-full w-full"
         />
       </div>
       {searchValue && searchValue.length > 0 && (
@@ -101,6 +109,7 @@ const RepoSearchBar = ({
                 <RepoSearchedItem
                   repo={repo}
                   callback={() => handleRepoClick(repo)}
+                  isSelected={selectedRepos.some((r) => r.id === repo.id)}
                 />
               );
             })}
