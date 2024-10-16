@@ -69,7 +69,6 @@ passport.serializeUser(function (userSession: any, done) {
     profileImage: userSession.photos[0].value,
     accessToken: userSession.accessToken,
   };
-  console.log(user);
   done(null, user);
 });
 

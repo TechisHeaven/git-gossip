@@ -1,21 +1,31 @@
-import { useEffect, useState } from "react";
-import { RepositoryType } from "../../types/repositories.type";
+import React, { SetStateAction, useEffect, useState } from "react";
+import { MainRepositoryType } from "../../types/repositories.type";
 import { searchRepos } from "../../services/repositories/service.repositories";
 import useDebounce from "../../utils/useDebounce";
 import { BiSearch } from "react-icons/bi";
 import Loader from "../Loader/Loader";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import RepoSearchedItem from "./RepoSearchedItem";
 
-const RepoSearchBar = () => {
-  const [searchValue, setSearchValue] = useState("");
-  const debouncedSearchValue = useDebounce(searchValue, 300);
+interface RepoSearchBarInterface {
+  isJoinRoomPage?: boolean;
+  setRoom?: React.Dispatch<SetStateAction<MainRepositoryType | null>>;
+}
+const RepoSearchBar = ({
+  isJoinRoomPage = false,
+  setRoom,
+}: RepoSearchBarInterface) => {
+  const [searchValue, setSearchValue] = useState<string | null>("");
+  const debouncedSearchValue = useDebounce(searchValue ? searchValue : "", 300);
   const [searchState, setSearchState] = useState({
     loading: false,
     error: "",
   });
-  const [searchReposItems, setSearchReposItems] = useState<RepositoryType[]>(
-    []
-  );
+  const [searchReposItems, setSearchReposItems] = useState<
+    MainRepositoryType[] | []
+  >([]);
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchRepos = async () => {
       if (debouncedSearchValue) {
@@ -47,6 +57,26 @@ const RepoSearchBar = () => {
     setSearchValue(event.target.value);
   }
 
+  const handleRepoClick = async (repo: MainRepositoryType) => {
+    if (isJoinRoomPage) {
+      // Logic for join room page
+      // const roomExists = await checkRoomExists(repo.id); // Implement this function
+      const roomExists = true;
+      if (roomExists && setRoom) {
+        // Logic to handle joining the room
+        // e.g., setRoomId(roomExists.id);
+        setRoom(repo);
+        setSearchValue(null);
+        setSearchReposItems([]);
+      } else {
+        alert("Room does not exist.");
+      }
+    } else {
+      // Logic for repo page
+      navigate(`/${repo.id}`);
+    }
+  };
+
   return (
     <div className="relative">
       <div className="inline-flex items-center bg-white text-black shadow-md rounded-full w-full px-2">
@@ -59,8 +89,8 @@ const RepoSearchBar = () => {
           className=" p-2 outline-none rounded-full w-full"
         />
       </div>
-      {searchValue.length > 0 && (
-        <div className="searchedRepos rounded-md w-full bg-white absolute top-10 p-2">
+      {searchValue && searchValue.length > 0 && (
+        <div className="searchedRepos rounded-md w-full bg-white absolute top-10 p-2 z-10">
           <h6 className="font-semibold text-xs text-gray-400">
             Popular Repositories
           </h6>
@@ -68,22 +98,10 @@ const RepoSearchBar = () => {
             {searchState.loading && <Loader size="sm" color="black" />}
             {searchReposItems.map((repo) => {
               return (
-                <Link
-                  to={`/${repo.id}`}
-                  className="py-1 inline-flex gap-2 items-center"
-                >
-                  <img
-                    src={repo?.owner.avatar_url}
-                    className="w-5 h-5 rounded-full shadow-md border"
-                    width={20}
-                    height={20}
-                    alt=""
-                  />
-                  <div className="block text-black">
-                    <h6 className="text-sm font-semibold">{repo.name}</h6>
-                    <p className="text-gray-400">{repo.full_name}</p>
-                  </div>
-                </Link>
+                <RepoSearchedItem
+                  repo={repo}
+                  callback={() => handleRepoClick(repo)}
+                />
               );
             })}
             {searchState.error.length > 0 && (
