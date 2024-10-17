@@ -17,6 +17,7 @@ function App() {
           <Route path="/:id/*" element={<RepositoriesDashboard />} />
           <Route path="/gossip/get-started" element={<ChatGetstarted />} />
           <Route path="/gossip" element={<Chat />} />
+          <Route path="/gossip/:id" element={<Chat />} />
           <Route path="/auth" element={<AuthRedirect />} />
           <Route path="/*" element={<div>404 page</div>} />
         </Route>

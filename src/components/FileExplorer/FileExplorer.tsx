@@ -10,27 +10,43 @@ import {
 import { ERROR_MESSAGE_FILE_NOT_FOUND } from "../../constants";
 import toast from "react-hot-toast";
 import { fileDataType } from "../../pages/RepositoriesDashboard";
+import Loader from "../Loader/Loader";
+import { useQuery } from "@tanstack/react-query";
 
 const FileExplorer = ({
   url,
   setFileData,
   setCurrentPath,
+  isRepoPage = true,
 }: {
   url: string;
   setFileData: Dispatch<SetStateAction<fileDataType>>;
-  setCurrentPath: Dispatch<SetStateAction<string[]>>;
+  setCurrentPath?: Dispatch<SetStateAction<string[]>>;
+  isRepoPage?: boolean;
 }) => {
   const [contents, setContents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set()); // Track open folders
   const navigate = useNavigate();
-  const { id, "*": path } = useParams<{ id: string; "*": string }>(); // Capture id and path
+  const { id, "*": path = "/" } = useParams<{ id: string; "*": string }>(); // Capture id and path
   const [cache, setCache] = useState<{ [path: string]: any[] }>({});
 
-  const fetchContents = async (fetchPath: string) => {
-    setLoading(true);
-    try {
-      const data = await getRepoContentDataByPath(fetchPath, url);
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["repoContents", path],
+    retry: false,
+    refetchOnWindowFocus: false,
+    queryFn: () => getRepoContentDataByPath(path!, url),
+  });
+
+  useEffect(() => {
+    if (error) {
+      toast.error(ERROR_MESSAGE_FILE_NOT_FOUND);
+      navigate(`/${id}`);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (data) {
       const sortedData = data.sort(
         (a: { type: string }, b: { type: string }) => {
           if (a.type === "dir" && b.type === "file") return -1;
@@ -38,36 +54,24 @@ const FileExplorer = ({
           return 0;
         }
       );
-      return sortedData; // Return fetched data
-    } catch (error: any) {
-      setLoading(false);
-      if (error.status === 404) {
-        toast.error(ERROR_MESSAGE_FILE_NOT_FOUND);
-        navigate(`/${id}`);
-        return;
+      setCache((prevCache) => ({ ...prevCache, [path!]: sortedData }));
+      setContents(sortedData);
+      setCurrentPath && setCurrentPath(path!.split("/"));
+      if (isRepoPage) {
+        const autoSelectFile =
+          sortedData.find(
+            (item: { name: string }) => item.name === "README.md"
+          ) ||
+          sortedData.find(
+            (item: { name: string }) => item.name === ".gitignore"
+          );
+
+        if (autoSelectFile) {
+          handleFileClick(autoSelectFile);
+        }
       }
-      return [];
-    } finally {
-      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchContents(path!).then((data) => {
-      if (!data) return;
-      setCache((prevCache) => ({ ...prevCache, [path!]: data }));
-      setContents(data);
-      setCurrentPath(path!.split("/"));
-
-      const autoSelectFile =
-        data.find((item: { name: string }) => item.name === "README.md") ||
-        data.find((item: { name: string }) => item.name === ".gitignore");
-
-      if (autoSelectFile) {
-        handleFileClick(autoSelectFile);
-      }
-    });
-  }, [path]);
+  }, [data]);
 
   const getIndentationLevel = (filePath: string) => {
     // Calculate the depth of the item based on slashes in the path
@@ -107,7 +111,8 @@ const FileExplorer = ({
           return newContents;
         });
       } else {
-        const fetchedContents = await fetchContents(folderPath);
+        // Removed the fetchContents call since it's no longer needed
+        const fetchedContents = await getRepoContentDataByPath(folderPath, url);
         if (fetchedContents && fetchedContents.length > 0) {
           setCache((prevCache) => ({
             ...prevCache,
@@ -123,15 +128,13 @@ const FileExplorer = ({
     }
 
     setOpenFolders(newOpenFolders);
-
-    console.log(id, path, navigate);
   };
   // navigate(`/${id}/${folderPath}`); // Update the URL with id
 
   return (
     <div className="p-2 px-4">
-      {loading ? (
-        <p>Loading...</p>
+      {isLoading ? (
+        <Loader color="white" size="sm" />
       ) : (
         <ul className="flex flex-col gap-2">
           {contents?.length > 0 ? (
@@ -159,7 +162,7 @@ const FileExplorer = ({
                 ) : (
                   <div
                     className=" inline-flex items-center gap-2"
-                    onClick={() => handleFileClick(item)}
+                    onClick={() => isRepoPage && handleFileClick(item)}
                   >
                     <CiFileOn className="text-lg" />
                     {item.name}

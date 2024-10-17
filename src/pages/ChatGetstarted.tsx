@@ -173,8 +173,10 @@ const CreateRoomSteps = () => {
   console.log(nextStep, prevStep);
   // function handleCreateRoom() {}
   const isButtonDisabled =
-    room.roomName.length < MIN_ROOM_NAME_LENGHT ||
-    room.repos.length > MAX_REPO_ROOM_SELECT_LIMIT;
+    (step === 1 && room.roomName.length < MIN_ROOM_NAME_LENGHT) ||
+    (step === 2 &&
+      (room.repos.length === 0 ||
+        room.repos.length > MAX_REPO_ROOM_SELECT_LIMIT));
   return (
     <div>
       {step === 1 && (

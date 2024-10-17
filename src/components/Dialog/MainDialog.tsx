@@ -1,12 +1,15 @@
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CgClose } from "react-icons/cg";
 
 interface DialogInterface {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   children?: React.ReactNode;
   className?: React.ComponentProps<"button">["className"];
   heading?: string;
+  isHoldButton?: boolean;
+  forceDialogTrigger?: boolean;
+  onClose?: () => void;
 }
 
 export default function MainDialog({
@@ -14,8 +17,11 @@ export default function MainDialog({
   children,
   className,
   heading,
+  isHoldButton,
+  forceDialogTrigger,
+  onClose,
 }: DialogInterface) {
-  let [isOpen, setIsOpen] = useState(false);
+  let [isOpen, setIsOpen] = useState(forceDialogTrigger || false);
 
   function open() {
     setIsOpen(true);
@@ -24,12 +30,42 @@ export default function MainDialog({
 
   function close() {
     setIsOpen(false);
+    if (onClose) onClose();
     window.document.body.style.overflowY = "auto";
+  }
+
+  useEffect(() => {
+    if (forceDialogTrigger) {
+      open();
+    } else {
+      close();
+    }
+  }, [forceDialogTrigger]);
+
+  let holdTimeout: NodeJS.Timeout | null = null; // Timer for hold action
+
+  function handleMouseDown(event: React.MouseEvent) {
+    if (isHoldButton) {
+      event.preventDefault();
+      // holdTimeout = setTimeout(() => open(), 400);
+    }
+  }
+
+  function handleMouseUp() {
+    if (holdTimeout) {
+      clearTimeout(holdTimeout); // Clear the timer if mouse is released
+      holdTimeout = null;
+    }
   }
 
   return (
     <>
-      <Button className={`${className}`} onClick={open}>
+      <Button
+        className={`${className} focus-visible:outline-none`}
+        onClick={!isHoldButton ? open : undefined} // Only allow click if not a hold button
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+      >
         {trigger}
       </Button>
 
