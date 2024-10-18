@@ -17,11 +17,13 @@ const FileExplorer = ({
   url,
   setFileData,
   setCurrentPath,
+  setFileDataLoading,
   isRepoPage = true,
 }: {
   url: string;
   setFileData: Dispatch<SetStateAction<fileDataType>>;
   setCurrentPath?: Dispatch<SetStateAction<string[]>>;
+  setFileDataLoading?: Dispatch<SetStateAction<boolean>>;
   isRepoPage?: boolean;
 }) => {
   const [contents, setContents] = useState<any[]>([]);
@@ -34,6 +36,7 @@ const FileExplorer = ({
   const { data, error, isLoading } = useQuery({
     queryKey: ["repoContents", path],
     retry: false,
+    enabled: !!id,
     refetchOnWindowFocus: false,
     queryFn: () => getRepoContentDataByPath(path!, url),
   });
@@ -83,7 +86,9 @@ const FileExplorer = ({
       const fileContent = await fetchFileContentByUrl(file.url);
       const readableData = atob(fileContent.content);
       setFileData({ content: readableData, name: fileContent.name });
+      setFileDataLoading && setFileDataLoading(false);
     } catch (error) {
+      setFileDataLoading && setFileDataLoading(false);
       console.log("Error fetching file content:", error);
     }
   };

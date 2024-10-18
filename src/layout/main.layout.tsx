@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../provider/userProvider";
 import { MAIN_SERVER_ROUTE } from "../constants";
 import { IoChevronBack } from "react-icons/io5";
@@ -62,7 +62,9 @@ const Main = () => {
               </li>
             )}
 
-            <h4 className="text-lg font-semibold">{heading}</h4>
+            <Link to="/" className="text-lg font-semibold">
+              {heading}
+            </Link>
           </div>
           <div className="profile">
             <DropDown
@@ -86,7 +88,7 @@ const Main = () => {
           </div>
         </ul>
       )}
-      <div className="p-4">
+      <div className="p-1 md:p-4 w-full h-full">
         <Outlet />
       </div>
     </>

@@ -4,7 +4,7 @@ interface LoaderInterface {
 }
 
 const Loader = (props: LoaderInterface) => {
-  const baseClasses = `border-gray-300 aspect-square animate-spin rounded-full ${
+  const baseClasses = `border-gray-300 z-10 aspect-square animate-spin rounded-full ${
     props.color === "black" ? "border-t-black" : "border-t-white"
   }`;
   const sizeClasses = {
