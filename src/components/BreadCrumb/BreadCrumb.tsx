@@ -1,5 +1,4 @@
 const Breadcrumb = ({ currentPath }: { currentPath: string[] }) => {
-  console.log(currentPath);
   return (
     <nav className="breadcrumb">
       {currentPath.map((folder, index) => (

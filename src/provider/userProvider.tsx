@@ -51,7 +51,6 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
     data: userData,
     isLoading,
     isError,
-    error,
     isFetching,
     isFetched,
   } = useQuery({
@@ -63,7 +62,6 @@ const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!isError && userData) setUser(userData);
-    console.log("isError", error);
     if (isError) {
       logoutUser();
     }

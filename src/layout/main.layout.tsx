@@ -52,7 +52,7 @@ const Main = () => {
   return (
     <>
       {user && (
-        <ul className="inline-flex items-center gap-2 px-4 p-2 justify-between w-full">
+        <ul className="inline-flex z-50 items-center gap-2 px-4 p-2 justify-between w-full">
           <div className="inline-flex items-center gap-2">
             {location.pathname !== "/" && (
               <li>
@@ -88,7 +88,7 @@ const Main = () => {
           </div>
         </ul>
       )}
-      <div className="p-1 md:p-4 w-full h-full">
+      <div className="p-1 md:p-4 w-full h-full overflow-hidden">
         <Outlet />
       </div>
     </>

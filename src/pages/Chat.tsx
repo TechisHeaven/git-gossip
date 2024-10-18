@@ -15,8 +15,9 @@ import {
 import { MainRepositoryType } from "../types/repositories.type";
 import CustomDrawer from "../components/Drawer/CustomDrawer";
 import { filterDateTime } from "../utils/time/filterTime";
-import { IoSend } from "react-icons/io5";
+import { IoChevronDown, IoSend } from "react-icons/io5";
 import Loader from "../components/Loader/Loader";
+import DropDown from "../components/DropDown/DropDown";
 
 const Chat = () => {
   const { id } = useParams<{ id: string }>();
@@ -99,13 +100,13 @@ const ChatRoom = ({ id }: { id: string | undefined }) => {
     setIsOpen(false); // Set isOpen to false when closing the dialog
   };
 
-  const items = [
-    {
-      id: "870462483",
-    },
-    {
-      id: "858526560",
-    },
+  const items: { id: string }[] = [
+    // {
+    //   id: "870462483",
+    // },
+    // {
+    //   id: "858526560",
+    // },
   ];
   return (
     <div className="chat-rooms flex flex-col gap-2">
@@ -117,17 +118,26 @@ const ChatRoom = ({ id }: { id: string | undefined }) => {
       >
         <div>{currentSelectedRoom && currentSelectedRoom.id}</div>
       </MainDialog>
-      {items.map((item) => {
-        return (
-          <ChatItem
-            item={item}
-            setIsOpen={setIsOpen}
-            isSelected={selectedRoom?.id === item.id}
-            onSelect={() => setSelectedRoom(item)}
-            setCurrentSelectedRoom={setCurrentSelectedRoom}
-          />
-        );
-      })}
+      {items.length > 0 ? (
+        items.map((item) => {
+          return (
+            <ChatItem
+              item={item}
+              setIsOpen={setIsOpen}
+              isSelected={selectedRoom?.id === item.id}
+              onSelect={() => setSelectedRoom(item)}
+              setCurrentSelectedRoom={setCurrentSelectedRoom}
+            />
+          );
+        })
+      ) : (
+        <Link
+          to={"/gossip/get-started"}
+          className="hover:underline p-4 font-semibold text-center"
+        >
+          Want to have some fun? 😉 Touch me please!😁
+        </Link>
+      )}
     </div>
   );
 };
@@ -346,7 +356,7 @@ const ChatHeader = ({
     setIsSidebarOpen(!isSidebarOpen);
   }
   return (
-    <div className="header z-10 absolute top-0 p-4 bg-mainBackgroundColor inline-flex w-full justify-between items-center">
+    <div className="header z-50 absolute top-0 p-4 bg-mainBackgroundColor inline-flex w-full justify-between items-center">
       <div>
         <h4 className="font-semibold text-base">TechWithCoffee</h4>
         <p className="text-xs text-gray-400">45 members, 24 online</p>
@@ -360,6 +370,7 @@ const ChatHeader = ({
 
 const ChatArea = ({ messages }: { messages: MessageType[] }) => {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const contentAreaRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () => {
     if (chatEndRef.current) {
@@ -375,20 +386,38 @@ const ChatArea = ({ messages }: { messages: MessageType[] }) => {
     };
   }, [messages]);
 
+  const handleScroll = () => {
+    const dropdown = document.querySelector(".dropdown-message");
+    if (dropdown) {
+      dropdown.setAttribute("data-closed", "");
+    }
+  };
+
+  useEffect(() => {
+    const contentArea = contentAreaRef.current;
+    if (contentArea) {
+      contentArea.addEventListener("scroll", handleScroll);
+    }
+
+    return () => {
+      if (contentArea) {
+        contentArea.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, []);
+
   return (
-    <div className="content-chat-area relative flex flex-col h-full overflow-y-auto">
+    <div
+      ref={contentAreaRef}
+      className="content-chat-area relative flex flex-col h-full overflow-y-auto"
+    >
       <div className="gossip my-14 justify-end flex flex-col flex-1 p-2">
         {messages.map((message) => {
           return (
             <UserChatMessage
               key={message.id}
               isUserMessage={message.userId === "1"}
-              message={message.message}
-              timestamp={
-                typeof message.timestamp === "string"
-                  ? message.timestamp
-                  : JSON.stringify(message.timestamp)
-              }
+              message={message}
               user={{
                 id: message.userId,
                 name: "Akshay",
@@ -406,26 +435,26 @@ const ChatArea = ({ messages }: { messages: MessageType[] }) => {
 
 const UserChatMessage = ({
   isUserMessage,
-  message,
+  message: { message, timestamp, id, userId },
   user,
-  timestamp,
 }: {
   isUserMessage: boolean;
-  message: string;
+  message: MessageType;
   user: {
     id: string;
     name: string;
     user_avatar: string;
   };
-  timestamp: string;
 }) => {
+  const messageRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <div
-      className={`gossip-user my-2 inline-flex ${
+      className={`gossip-user my-2 inline-flex  ${
         isUserMessage ? "justify-end" : "justify-start"
       }`}
     >
-      <div className="p-1 inline-flex gap-2 items-start">
+      <div ref={messageRef} className="p-1  inline-flex gap-2 items-start">
         {!isUserMessage && (
           <img
             src={
@@ -441,7 +470,11 @@ const UserChatMessage = ({
           <div className="title-user px-2 font-semibold text-base inline-flex gap-2 items-center">
             {user.name}
             <span className="time text-xs text-gray-400">
-              {filterDateTime(timestamp)}
+              {filterDateTime(
+                typeof timestamp === "string"
+                  ? timestamp
+                  : JSON.stringify(timestamp)
+              )}
             </span>
           </div>
           <div
@@ -454,6 +487,15 @@ const UserChatMessage = ({
             {message}
           </div>
         </div>
+
+        <DropDown
+          attr_key="message"
+          target={<IoChevronDown className="text-lg" />}
+        >
+          <div>
+            {id} {userId} {message}
+          </div>
+        </DropDown>
       </div>
     </div>
   );
@@ -497,55 +539,55 @@ const DummyMessages: MessageType[] = [
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 3,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 4,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 5,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 6,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 7,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 8,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 9,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 10,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),
   },
   {
-    id: 2,
+    id: 11,
     message: "Hello sir from sender",
     userId: "2",
     timestamp: Date.now(),

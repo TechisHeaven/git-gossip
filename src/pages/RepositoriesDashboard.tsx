@@ -13,6 +13,7 @@ import {
 } from "../constants";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "../components/Loader/Loader";
+import { CiChat1 } from "react-icons/ci";
 
 export type fileDataType = {
   content: string;
@@ -65,9 +66,9 @@ const RepositoriesDashboard = () => {
         <OwnerProfile owner={repo?.owner!} />
         <Link
           to={`/gossip/${repo?.id}`}
-          className="px-4 p-2 border font-semibold bg-white hover:bg-gray-100 transition-colors text-black rounded-lg shadow-md m-4 my-0 whitespace-nowrap"
+          className="px-4 p-2 border inline-flex items-center gap-2 font-semibold bg-white hover:bg-gray-100 transition-colors text-black rounded-lg shadow-md m-4 my-0 whitespace-nowrap"
         >
-          Gossip Now
+          <CiChat1 className="text-lg" /> Gossip Now
         </Link>
         {repo?.url && (
           <FileExplorer

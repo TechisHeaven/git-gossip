@@ -8,7 +8,10 @@ const OwnerProfile = ({ owner }: { owner: RepositoryType["owner"] }) => {
       className="inline-flex items-center gap-2 p-4"
     >
       <img
-        src={owner?.avatar_url}
+        src={
+          owner?.avatar_url ||
+          "https://api.dicebear.com/9.x/big-smile/svg?seed=Aidan"
+        }
         width={20}
         height={20}
         className="w-5 h-5 rounded-full shadow-sm border"
