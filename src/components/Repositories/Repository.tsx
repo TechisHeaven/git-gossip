@@ -19,6 +19,9 @@ const Repository = ({ repo }: { repo: RepositoryType }) => {
         <div className="flex flex-row gap-2 items-center">
           <a
             href={repo.html_url}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex gap-2 items-center hover:underline text-lg font-semibold"
