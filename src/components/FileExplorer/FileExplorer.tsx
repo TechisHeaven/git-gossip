@@ -21,7 +21,7 @@ const FileExplorer = ({
   isRepoPage = true,
 }: {
   url: string;
-  setFileData: Dispatch<SetStateAction<fileDataType>>;
+  setFileData?: Dispatch<SetStateAction<fileDataType>>;
   setCurrentPath?: Dispatch<SetStateAction<string[]>>;
   setFileDataLoading?: Dispatch<SetStateAction<boolean>>;
   isRepoPage?: boolean;
@@ -85,7 +85,8 @@ const FileExplorer = ({
     try {
       const fileContent = await fetchFileContentByUrl(file.url);
       const readableData = atob(fileContent.content);
-      setFileData({ content: readableData, name: fileContent.name });
+      setFileData &&
+        setFileData({ content: readableData, name: fileContent.name });
       setFileDataLoading && setFileDataLoading(false);
     } catch (error) {
       setFileDataLoading && setFileDataLoading(false);

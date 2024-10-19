@@ -5,19 +5,19 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FiSidebar } from "react-icons/fi";
 import FileExplorer from "../components/FileExplorer/FileExplorer";
-import { fileDataType } from "./RepositoriesDashboard";
 import { getRepoById } from "../services/repositories/service.repositories";
 import toast from "react-hot-toast";
 import {
   ERROR_MESSAGE_GITHUB_API_LIMIT,
   ERROR_MESSAGE_NOT_FOUND,
 } from "../constants";
-import { MainRepositoryType } from "../types/repositories.type";
 import CustomDrawer from "../components/Drawer/CustomDrawer";
 import { filterDateTime } from "../utils/time/filterTime";
 import { IoChevronDown, IoSend } from "react-icons/io5";
 import Loader from "../components/Loader/Loader";
 import DropDown from "../components/DropDown/DropDown";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { useQuery } from "@tanstack/react-query";
 
 const Chat = () => {
   const { id } = useParams<{ id: string }>();
@@ -238,9 +238,15 @@ type MessageType = {
   userId: string;
   timestamp: number;
 };
-
+type SidebarProps = {
+  isOpen: boolean;
+  sidebar: "file_explorer" | "info" | null;
+};
 const ChatContent = ({ id }: ChatContentInterface) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<SidebarProps>({
+    isOpen: false,
+    sidebar: null,
+  });
   const [messages, setMessages] = useState<MessageType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   useEffect(() => {
@@ -250,6 +256,11 @@ const ChatContent = ({ id }: ChatContentInterface) => {
     }
     setLoading(false);
   }, [id]);
+
+  function handleOnClose() {
+    setIsSidebarOpen({ isOpen: false, sidebar: null });
+  }
+
   return (
     <>
       {id ? (
@@ -262,7 +273,11 @@ const ChatContent = ({ id }: ChatContentInterface) => {
               isSidebarOpen={isSidebarOpen}
               setIsSidebarOpen={setIsSidebarOpen}
             />
-            <SideBar id={id} isSidebarOpen={isSidebarOpen} />
+            <SideBar
+              id={id}
+              isSidebarOpen={isSidebarOpen}
+              onClose={handleOnClose}
+            />
           </>
         )
       ) : (
@@ -277,8 +292,8 @@ const ChatContentArea = ({
   isSidebarOpen,
   messages,
 }: {
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
+  isSidebarOpen: SidebarProps;
+  setIsSidebarOpen: Dispatch<SetStateAction<SidebarProps>>;
   messages: MessageType[];
 }) => {
   return (
@@ -296,52 +311,55 @@ const ChatContentArea = ({
 const SideBar = ({
   id,
   isSidebarOpen,
+  onClose,
 }: {
   id: string;
-  isSidebarOpen: boolean;
+  isSidebarOpen: SidebarProps;
+  onClose: () => void;
 }) => {
-  const [fileData, setFileData] = useState<fileDataType>({
-    content: "",
-    name: "",
-  });
-  const [repo, setRepo] = useState<MainRepositoryType>();
   const navigate = useNavigate();
+  const {
+    data: repo,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey: ["repo", id],
+    retry: false,
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+    queryFn: () => getRepoById(Number(id)),
+  });
+
   useEffect(() => {
-    if (!id) return;
+    if (error instanceof Error) {
+      const errorStatus = (error as any).status;
+      if (errorStatus === 403) {
+        toast.error(ERROR_MESSAGE_GITHUB_API_LIMIT);
+        navigate("/");
+        return;
+      }
+      if (errorStatus === 404) {
+        toast.error(ERROR_MESSAGE_NOT_FOUND);
+        navigate("/");
+        return;
+      }
+    }
+  }, [error]);
 
-    getRepoById(Number(id))
-      .then((repo) => {
-        setRepo(repo);
-      })
-      .catch((error) => {
-        console.log("error: ", error, error.message);
-        if (error.status === 403) {
-          toast.error(ERROR_MESSAGE_GITHUB_API_LIMIT);
-          navigate("/");
-          return;
-        }
-        if (error.status === 404) {
-          toast.error(ERROR_MESSAGE_NOT_FOUND);
-          navigate("/");
-          return;
-        }
-      });
-  }, [id]);
-
-  console.log(fileData);
-
-  return (
-    repo && (
-      <div>
-        <CustomDrawer isOpen={isSidebarOpen}>
-          <FileExplorer
-            isRepoPage={false}
-            url={repo.url}
-            setFileData={setFileData}
-          />
-        </CustomDrawer>
-      </div>
-    )
+  return repo && isLoading ? (
+    <Loader color="white" size="sm" />
+  ) : (
+    <CustomDrawer
+      onClose={onClose}
+      title={isSidebarOpen.sidebar ? isSidebarOpen.sidebar : "File Explorer"}
+      isOpen={isSidebarOpen.isOpen}
+    >
+      {isSidebarOpen.sidebar === "file_explorer" ? (
+        <FileExplorer isRepoPage={false} url={repo.url} />
+      ) : (
+        <div>Info</div>
+      )}
+    </CustomDrawer>
   );
 };
 
@@ -349,21 +367,26 @@ const ChatHeader = ({
   setIsSidebarOpen,
   isSidebarOpen,
 }: {
-  setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
-  isSidebarOpen: boolean;
+  setIsSidebarOpen: Dispatch<SetStateAction<SidebarProps>>;
+  isSidebarOpen: SidebarProps;
 }) => {
-  function handleSidebarToggle() {
-    setIsSidebarOpen(!isSidebarOpen);
+  function handleSidebarToggle(type: SidebarProps["sidebar"]) {
+    setIsSidebarOpen({ isOpen: !isSidebarOpen.isOpen, sidebar: type });
   }
   return (
-    <div className="header z-50 absolute top-0 p-4 bg-mainBackgroundColor inline-flex w-full justify-between items-center">
+    <div className="header z-10 absolute top-0 p-4 bg-mainBackgroundColor inline-flex w-full justify-between items-center">
       <div>
         <h4 className="font-semibold text-base">TechWithCoffee</h4>
         <p className="text-xs text-gray-400">45 members, 24 online</p>
       </div>
-      <button onClick={handleSidebarToggle}>
-        <FiSidebar className="text-lg" />
-      </button>
+      <div className="inline-flex items-center gap-2">
+        <button onClick={() => handleSidebarToggle("file_explorer")}>
+          <FiSidebar className="text-lg" />
+        </button>
+        <button onClick={() => handleSidebarToggle("info")}>
+          <BsThreeDotsVertical className="text-lg" />
+        </button>
+      </div>
     </div>
   );
 };
