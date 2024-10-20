@@ -83,7 +83,7 @@ const FileExplorer = ({
 
   const handleFileClick = async (file: any) => {
     try {
-      const fileContent = await fetchFileContentByUrl(file.url);
+      const fileContent = await fetchFileContentByUrl(file?.url);
       const readableData = atob(fileContent.content);
       setFileData &&
         setFileData({ content: readableData, name: fileContent.name });
