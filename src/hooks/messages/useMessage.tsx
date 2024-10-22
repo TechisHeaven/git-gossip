@@ -18,11 +18,9 @@ export const useMessage = (id: string | undefined) => {
   }
 
   function deleteMessage(messageId: string) {
-    const filteredMessages = messages.filter(
-      (message) => message.id !== messageId
+    setMessages((prevMessages) =>
+      prevMessages.filter((message) => message.id !== messageId)
     );
-    console.log(filteredMessages);
-    setMessages(filteredMessages);
   }
 
   return { messages, isLoading, addMessage, deleteMessage };

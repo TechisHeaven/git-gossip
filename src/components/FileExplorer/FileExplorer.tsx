@@ -4,6 +4,7 @@ import { CiFileOn } from "react-icons/ci";
 import { useNavigate, useParams } from "react-router-dom";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
+  fetchFileBySearchContentGraphQl,
   fetchFileContentByUrl,
   getRepoContentDataByPath,
 } from "../../services/repositories/service.repositories";
@@ -40,6 +41,11 @@ const FileExplorer = ({
     refetchOnWindowFocus: false,
     queryFn: () => getRepoContentDataByPath(path!, url),
   });
+
+  useEffect(() => {
+    const expression = `main:src/`; // Search in the "main" branch
+    fetchFileBySearchContentGraphQl(expression).then((res) => console.log(res));
+  }, []);
 
   useEffect(() => {
     if (error) {

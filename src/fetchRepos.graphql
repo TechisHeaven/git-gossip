@@ -1,0 +1,24 @@
+query ($searchTerm: String!, $expression: String!, $owner: String!, $repo: String!) {
+  repository(owner: $owner", name: $repo) {
+    object(expression: $expression) {
+      ... on Tree {
+        entries {
+          name
+          type
+          object {
+            ... on Blob {
+              byteSize
+              text
+            }
+            ... on Tree {
+              entries {
+                name
+                type
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

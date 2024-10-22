@@ -1,3 +1,5 @@
+import { UserInterface } from "./auth.type";
+
 export type RepositoryType = {
   id: string;
   owner: {
@@ -25,3 +27,20 @@ export type MainRepositoryType = {
   contents_url: string;
   url: string;
 };
+
+interface currentSelectedRoomInterface {
+  id: string;
+}
+
+export type currentSelectedRoomType = currentSelectedRoomInterface | null;
+
+export interface ChatContentInterface {
+  id: string | undefined;
+  user: UserInterface | null;
+}
+
+export interface InteractionItemsInterface {
+  title: string;
+  icon: React.ReactNode;
+  callback: () => void;
+}

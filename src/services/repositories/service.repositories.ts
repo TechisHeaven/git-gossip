@@ -111,3 +111,112 @@ export async function fetchFileContentByUrl(url: string) {
     throw error;
   }
 }
+export async function fetchFileContentGraphQl() {
+  try {
+    const query = `
+ query {
+    repository(owner: "Akshay7311", name: "onlineshopping") {
+      object(expression: "main:") {
+        ... on Tree {
+          entries {
+            name
+            type
+            object {
+              ... on Blob {
+                byteSize
+                text
+              }
+              ... on Tree {
+                entries {
+                  name
+                  type
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+`;
+
+    const token = getGithubUserToken();
+    const result = await axios.post(
+      "https://api.github.com/graphql",
+      { query },
+      {
+        headers: {
+          Authorization: `token ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return result;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+export async function fetchFileBySearchContentGraphQl(expression: string) {
+  try {
+    const query = `
+     query ($expression: String!){
+        repository(owner: "TechisHeaven", name: "git-gossip") {
+          object(expression: $expression) {
+            ... on Tree {
+              entries {
+                name
+                type
+                object {
+                  ... on Blob {
+                    text
+                  }
+                  ... on Tree {
+                    entries {
+                      name
+                      type
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+`;
+
+    const token = getGithubUserToken();
+    const response = await fetch("https://api.github.com/graphql", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query,
+        variables: { expression },
+      }),
+    });
+
+    const data = await response.json();
+    // Log full response for debugging
+    console.log("GraphQL Response:", data);
+
+    if (data.errors) {
+      console.error("GraphQL Errors:", data.errors);
+      throw new Error("GraphQL query failed");
+    }
+
+    // Safely handle cases where the response is null or invalid
+    if (!data?.data?.repository?.object?.entries) {
+      console.warn("No entries found for the given expression");
+      return [];
+    }
+
+    return data.data.repository.object.entries;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
