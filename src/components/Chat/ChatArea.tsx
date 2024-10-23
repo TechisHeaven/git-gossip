@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UserInterface } from "../../types/auth.type";
-import { MessageType } from "../../types/main.type";
+import { HoveredPathProps, MessageType } from "../../types/main.type";
 import UserChatMessage from "./UserChatMessage";
 import { MainRepositoryType } from "../../types/repositories.type";
 
@@ -16,6 +16,7 @@ const ChatArea = ({
   user: UserInterface;
 }) => {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const [hoveredPath, setHoveredPath] = useState<HoveredPathProps>(null);
   const contentAreaRef = useRef<HTMLDivElement | null>(null);
   const userId = user?.id;
   const scrollToBottom = () => {
@@ -34,8 +35,12 @@ const ChatArea = ({
 
   const handleScroll = () => {
     const dropdown = document.querySelector(".dropdown-message");
+    const codePreview = document.querySelector(".codePreview");
     if (dropdown) {
       dropdown.setAttribute("data-closed", "");
+    }
+    if (codePreview) {
+      setHoveredPath(null);
     }
   };
 
@@ -58,7 +63,7 @@ const ChatArea = ({
       className="content-chat-area relative flex flex-col h-full overflow-y-auto"
     >
       <div className="gossip my-14 justify-end flex flex-col flex-1 p-2">
-        {messages.map((message) => {
+        {messages.map((message, index) => {
           return (
             <UserChatMessage
               repoUrl={repo?.url}
@@ -72,6 +77,9 @@ const ChatArea = ({
                 user_avatar:
                   "https://avatars.githubusercontent.com/u/95562007?v=4",
               }}
+              messageIndex={index}
+              hoveredPath={hoveredPath}
+              setHoveredPath={setHoveredPath}
             />
           );
         })}

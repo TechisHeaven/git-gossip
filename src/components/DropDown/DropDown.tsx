@@ -4,15 +4,17 @@ export default function DropDown({
   children,
   target,
   attr_key,
+  buttonRef,
 }: {
   children: React.ReactNode;
   target: React.ReactNode;
   attr_key?: string;
+  buttonRef?: React.RefObject<HTMLButtonElement>;
 }) {
   return (
-    <div className=" text-right">
-      <Menu __demoMode={false}>
-        <MenuButton>{target}</MenuButton>
+    <div className="text-right">
+      <Menu>
+        <MenuButton ref={buttonRef}>{target}</MenuButton>
 
         <MenuItems
           transition
