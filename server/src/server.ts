@@ -9,6 +9,9 @@ import session from "express-session";
 import * as middlewares from "./middleware";
 import api from "./routes";
 import jwt from "jsonwebtoken";
+import { db } from "./db";
+import { sessions } from "./db/schema";
+import { sql } from "drizzle-orm";
 
 dotenv.config();
 const app = express();
@@ -63,6 +66,7 @@ passport.serializeUser(function (userSession: any, done) {
   const user = {
     id: userSession.id,
     displayName: userSession.displayName,
+    email: userSession.email,
     username: userSession.username,
     location: userSession.location,
     profileUrl: userSession.profileUrl,
@@ -83,7 +87,7 @@ app.use(passport.session());
 
 app.use("/api/v1", api);
 
-export function ensureAuthenticated(req: any, res: any, next: () => any) {
+export async function ensureAuthenticated(req: any, res: any, next: () => any) {
   // Extract the token from the Authorization header
   const token = req.headers.authorization?.split(" ")[1]; // Assuming 'Bearer TOKEN'
 
@@ -92,7 +96,6 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
       .status(401)
       .json({ message: "No token provided. Unauthorized access." });
   }
-
   // Verify the token using your JWT_SECRET
   jwt.verify(token, process.env.JWT_SECRET!, (err: any, decoded: any) => {
     if (err) {
@@ -100,13 +103,16 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
         .status(401)
         .json({ message: "Invalid token. Unauthorized access." });
     }
-
     // If the token is valid, attach the user data to the request object
     req.user = decoded as any;
   });
-  console.log(req.user);
-  if (req.user) {
-    return next();
+  if (req.user && req.user.accessToken) {
+    const sessionExists = await checkSessionInDatabase(req.user.accessToken);
+    if (sessionExists) {
+      return next();
+    } else {
+      return res.status(401).json({ message: "Session expired or not found." });
+    }
   }
 
   if (req.isAuthenticated()) {
@@ -117,6 +123,15 @@ export function ensureAuthenticated(req: any, res: any, next: () => any) {
     message: "Not Authenticated",
   });
   // res.json("not authenicated");
+}
+
+async function checkSessionInDatabase(sessionId: string) {
+  // Replace with your database query logic to check session
+  const session = await db
+    .select()
+    .from(sessions)
+    .where(sql`${sessions.accessToken} = ${sessionId}`);
+  return session[0] !== undefined;
 }
 
 app.use(middlewares.notFound);

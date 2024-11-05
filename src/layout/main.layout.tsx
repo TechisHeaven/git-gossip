@@ -39,7 +39,7 @@ const Main = () => {
   const userImage = user?.profileImage || "vite.svg";
 
   function handleBackButton() {
-    navigate(-1);
+    navigate("/");
   }
 
   function getHeadingPathname() {

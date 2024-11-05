@@ -1,10 +1,6 @@
-import { FaFolderClosed, FaFolderOpen } from "react-icons/fa6";
-import { CiFileOn } from "react-icons/ci";
-
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
-  fetchFileBySearchContentGraphQl,
   fetchFileContentByUrl,
   getRepoContentDataByPath,
 } from "../../services/repositories/service.repositories";
@@ -13,6 +9,7 @@ import toast from "react-hot-toast";
 import { fileDataType } from "../../pages/RepositoriesDashboard";
 import Loader from "../Loader/Loader";
 import { useQuery } from "@tanstack/react-query";
+import FileExplorerContent from "./FileExplorerContent";
 
 const FileExplorer = ({
   url,
@@ -28,24 +25,21 @@ const FileExplorer = ({
   isRepoPage?: boolean;
 }) => {
   const [contents, setContents] = useState<any[]>([]);
-  // const [loading, setLoading] = useState(false);
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set()); // Track open folders
   const navigate = useNavigate();
   const { id, "*": path = "/" } = useParams<{ id: string; "*": string }>(); // Capture id and path
   const [cache, setCache] = useState<{ [path: string]: any[] }>({});
+  const [searchParams] = useSearchParams();
+  const fileSearchParam = searchParams.get("file");
+  const fileSearchPath = fileSearchParam ? fileSearchParam.split("/") : [];
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ["repoContents", path],
+    queryKey: ["repoContents", id, path],
     retry: false,
     enabled: !!id,
     refetchOnWindowFocus: false,
     queryFn: () => getRepoContentDataByPath(path!, url),
   });
-
-  useEffect(() => {
-    const expression = `main:src/`; // Search in the "main" branch
-    fetchFileBySearchContentGraphQl(expression).then((res) => console.log(res));
-  }, []);
 
   useEffect(() => {
     if (error) {
@@ -65,7 +59,10 @@ const FileExplorer = ({
       );
       setCache((prevCache) => ({ ...prevCache, [path!]: sortedData }));
       setContents(sortedData);
-      setCurrentPath && setCurrentPath(path!.split("/"));
+      setCurrentPath && setCurrentPath(fileSearchPath);
+      // if (isRepoPage && fileSearchPath) {
+      //   // openFileOrFolderPath(fileSearchPath);
+      // } else if (isRepoPage) {
       if (isRepoPage) {
         const autoSelectFile =
           sortedData.find(
@@ -73,19 +70,34 @@ const FileExplorer = ({
           ) ||
           sortedData.find(
             (item: { name: string }) => item.name === ".gitignore"
-          );
-
-        if (autoSelectFile) {
+          ) ||
+          sortedData[sortedData.length - 1];
+        if (autoSelectFile && autoSelectFile.type === "file") {
           handleFileClick(autoSelectFile);
+        } else {
+          toast.error("Please select a file to view its contents.");
         }
       }
+      // }
     }
   }, [data]);
 
-  const getIndentationLevel = (filePath: string) => {
-    // Calculate the depth of the item based on slashes in the path
-    return filePath.split("/").length - 1;
-  };
+  // const openFileOrFolderPath = async (pathParts: string[]) => {
+  //   let currentPath = "";
+  //   let index = 0;
+  //   for (const part of pathParts) {
+  //     currentPath = currentPath ? `${currentPath}/${part}` : part;
+  //     const folderItem = contents.find((item) => item.name === part);
+  //     console.log("folderItem", folderItem);
+  //     if (folderItem?.type === "dir") {
+  //       await handleFolderClick(currentPath, index);
+  //       index++;
+  //     } else if (folderItem?.type === "file") {
+  //       handleFileClick(folderItem);
+  //       break;
+  //     }
+  //   }
+  // };
 
   const handleFileClick = async (file: any) => {
     try {
@@ -94,6 +106,8 @@ const FileExplorer = ({
       setFileData &&
         setFileData({ content: readableData, name: fileContent.name });
       setFileDataLoading && setFileDataLoading(false);
+
+      navigate(`/${id}?file=${file.path}`);
     } catch (error) {
       setFileDataLoading && setFileDataLoading(false);
       console.log("Error fetching file content:", error);
@@ -103,7 +117,6 @@ const FileExplorer = ({
   const handleFolderClick = async (folderPath: string, index: number) => {
     const isOpen = openFolders.has(folderPath);
     const newOpenFolders = new Set(openFolders);
-
     if (isOpen) {
       // Collapse the folder
       newOpenFolders.delete(folderPath);
@@ -148,44 +161,12 @@ const FileExplorer = ({
       {isLoading ? (
         <Loader color="white" size="sm" />
       ) : (
-        <ul className="flex flex-col gap-2">
-          {contents?.length > 0 ? (
-            contents.map((item, index) => (
-              <li
-                key={item.sha}
-                style={{
-                  paddingLeft: `${getIndentationLevel(item.path) * 1.5}rem`,
-                }}
-              >
-                {item.type === "dir" ? (
-                  <div
-                    className="cursor-pointer inline-flex gap-2 items-center font-semibold"
-                    onClick={() => handleFolderClick(item.path, index)}
-                  >
-                    <span>
-                      {openFolders.has(item.path) ? (
-                        <FaFolderOpen className="text-lg" />
-                      ) : (
-                        <FaFolderClosed className="text-lg" />
-                      )}
-                    </span>{" "}
-                    {item.name}
-                  </div>
-                ) : (
-                  <div
-                    className=" inline-flex items-center gap-2"
-                    onClick={() => isRepoPage && handleFileClick(item)}
-                  >
-                    <CiFileOn className="text-lg" />
-                    {item.name}
-                  </div>
-                )}
-              </li>
-            ))
-          ) : (
-            <div>Failed to Fetch Repositories</div>
-          )}
-        </ul>
+        <FileExplorerContent
+          contents={contents}
+          openFolders={openFolders}
+          handleFolderClick={handleFolderClick}
+          handleFileClick={handleFileClick}
+        />
       )}
     </div>
   );

@@ -74,7 +74,6 @@ const UserChatMessage = ({
   // Use React Query to handle Code Preview
   const {
     data: codePreview,
-    error,
     isLoading,
     isFetching,
   } = useQuery({
@@ -85,6 +84,7 @@ const UserChatMessage = ({
         : Promise.resolve(null),
     enabled: !!hoveredPath,
     refetchOnWindowFocus: false,
+    retry: false,
   });
 
   //Handle Mouse Hover
@@ -164,7 +164,6 @@ const UserChatMessage = ({
             </a>
           </div>
           <div className="p-2">
-            <div>{error && error.message}</div>
             {isLoading && isFetching ? (
               <Loader color="white" size="sm" />
             ) : (
